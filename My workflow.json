@@ -1,0 +1,223 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -240,
+        16
+      ],
+      "id": "f72292e9-3e4f-4ab3-a5d0-3228a4d84170",
+      "name": "Webhook",
+      "webhookId": "0b5773ce-c752-4e1a-a758-bba1aaeed884"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "9338c5de-aa0b-48ba-8287-5b9ea425a7a6",
+              "leftValue": "={{ $json.body.name }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "a7f5560e-be3d-42b7-9321-119fc37f79ab",
+              "leftValue": "={{ $json.body.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -16,
+        16
+      ],
+      "id": "71be272e-bf6c-4882-8924-a28a15d75d89",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1QIAxgbzvuixvHlPDJYoCIpUXsFgDxXeKlvxKZ6zJRfk/edit?usp=sharing",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1QIAxgbzvuixvHlPDJYoCIpUXsFgDxXeKlvxKZ6zJRfk/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        208,
+        -80
+      ],
+      "id": "4bdba954-f939-40e9-b93b-8c61723ccad0",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "xWeqbDukL8MpdApM",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.body.email }}",
+        "subject": "=Thank you {{ $json.body.name }}!",
+        "message": "=<h2>Hello {{ $json.body.name }}!</h2> <p>Thank you for reaching out to us. We have received your inquiry.</p> <p>Our team will get back to you within <strong>24 hours</strong>.</p> <br> <p><b>Your submitted details:</b></p> <ul>   <li><b>Name:</b> {{ $json.body.name }}</li>   <li><b>Email:</b> {{ $json.body.email }}</li>   <li><b>Phone:</b> {{ $json.body.phone }}</li>   <li><b>Message:</b> {{ $json.body.message }}</li> </ul> <br> <p>Best regards,<br> <b>Earthonoid AI Team</b></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        432,
+        -80
+      ],
+      "id": "7a4b0ad3-a5f2-4285-ae48-d509ac4988b5",
+      "name": "Send a message",
+      "webhookId": "2fed64e8-d19f-481e-9482-39cccef581f7",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "QeyQxl5J3WHeydjQ",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": true,\n  \"message\": \"Thank you! We will contact you within 24 hours.\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        656,
+        -80
+      ],
+      "id": "20ca6137-964b-43bc-8250-3d306e76340a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"success\": false,\n  \"message\": \"Name and email are required!\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        208,
+        112
+      ],
+      "id": "64f2fa05-762b-4cfe-bc30-c9fe98c58812",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d186126c-c83d-4500-ba58-21481d551a9e",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5d608d3bb7f8f4d5200627ce05d83a5c11b390dff82e01b37ddd214dd12f6be"
+  },
+  "id": "Hq6FBWlM412iZJBL",
+  "tags": []
+}
